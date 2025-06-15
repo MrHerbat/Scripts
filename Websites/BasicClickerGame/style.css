@@ -1,0 +1,28 @@
+.upgrade{
+    border: 1px solid black;
+    margin: 5px;
+}
+header{
+    text-align: center;
+    margin-bottom: 15px;
+}
+main{
+    display: flex;
+}
+#upgrades{
+    width: 30%;
+}
+#mainScreen{
+    width: 70%;
+    text-align: center;
+}
+#clickButton{
+    font-size: 200%;    
+    padding: 10px;
+}
+.hidden{
+    visibility: hidden;
+}
+h3,h4{
+    margin: 2px;
+}

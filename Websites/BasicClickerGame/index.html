@@ -4,17 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Basic Clicker</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
-        <h2>Basic Clicker Website</h2>
-        <button onclick="saveGame()">Save the game!</button>
+            <h1>Basic Clicker Website</h1>
+        <section id="options">
+            <span id="saveProgress" style="visibility: none;"></span> <br>
+            <button onclick="saveGame()">Save the game!</button>
+            <button onclick="resetGame()">Reset your progress!</button>
+        </section>
+        
     </header>
     <main>
         <section id="upgrades">
+            <h3>Upgrades!</h3>
+            <nav>
+                <button onclick="showUpgrades(0)" id="allUp" disabled>All</button>
+                <button onclick="showUpgrades(1)" id="btnUp">Button</button>
+                <button onclick="showUpgrades(2)" id="autoUp">Automation</button>
+            </nav>
         </section>
         <section id="mainScreen">
             <h3>Points = <span id="points">0</span></h3>
+            <h4>pt/s = <span id="ptS">0</span></h4>
             <button id="clickButton">Click!</button>
         </section>
     </main>
@@ -27,9 +40,14 @@
         const upgradesContainer = document.getElementById("upgrades");
 
         const upgradesList = [
-            {name: "Strong Button", addGain: 1, cost: 10},
-            {name: "Stronger Button!", addGain: 5, cost: 40}
+            {name: "Strong Button", addGain: 1, cost: 10, upgradeAmount: 0, category: 'button'},
+            {name: "Stronger Button!", addGain: 5, cost: 40, upgradeAmount: 0, category: 'button'}
         ];
+
+        clickerButton.addEventListener('click', () =>{
+            pointCount+=pointGain;
+            pointText.textContent = pointCount;
+        });
 
         function loadGame(){
             const saved = localStorage.getItem("basicClickerGameSave");
@@ -40,8 +58,14 @@
                 upgradesList.forEach((upgrade,index) => {
                     if(gameState.upgradesList && gameState.upgradesList[index]) {
                         upgradesList[index].cost = gameState.upgradesList[index].cost;
+                        upgradesList[index].upgradeAmount = gameState.upgradesList[index].upgradeAmount;
                     }
                 })
+                document.getElementById("saveProgress").style.visibility = 'visible';
+                document.getElementById("saveProgress").textContent = "Save Loaded!";
+                setTimeout(() => {
+                    document.getElementById("saveProgress").style.visibility = 'hidden';
+                }, 2500);
             }
         }
 
@@ -52,23 +76,32 @@
                 upgradesList
             }; 
             localStorage.setItem("basicClickerGameSave",JSON.stringify(gameState));
-            alert("Game Saved Succesfully!")
+            document.getElementById("saveProgress").style.visibility = 'visible';
+                document.getElementById("saveProgress").textContent = "Game Saved!";
+                setTimeout(() => {
+                    document.getElementById("saveProgress").style.visibility = 'hidden';
+                }, 2500);
         }
 
-
-        clickerButton.addEventListener('click', () =>{
-            pointCount+=pointGain;
-            pointText.textContent = pointCount;
-        });
+        function resetGame(params) {
+            if (confirm("Are you sure you want to reset?")) {
+                localStorage.removeItem('basicClickerGameSave');
+                location.reload();
+            }
+        }
 
         function createUpgradeButtons() {
             upgradesList.forEach((upgrade, index) => {
+                const block = document.createElement('div');
                 const btn = document.createElement('button');
-                btn.className = 'upgrade';
+                block.classList.add('upgrade');
+                block.classList.add(`${upgrade.category}`);
                 btn.id = `upgrade-${index}`;
-                btn.innerHTML = `${upgrade.name} (+${upgrade.power}) - Cost: <span id="cost-${index}">${upgrade.cost}</span>`;
+                btn.innerHTML = `<i>Cost: <span id="cost-${index}">${upgrade.cost}</i></span>`;
+                block.innerHTML = `<img src=''><b>${upgrade.name}</b>(<span id='upAmount-${index}'>${upgrade.upgradeAmount}</span>) <i> category - ${upgrade.category}<i></br>Point Gain(+${upgrade.addGain}) -`;
                 btn.addEventListener('click', () => buyUpgrade(index));
-                upgradesContainer.appendChild(btn);
+                block.appendChild(btn);
+                upgradesContainer.appendChild(block);
             });
         }
 
@@ -77,17 +110,57 @@
         if (pointCount >= upgrade.cost) {
             pointCount -= upgrade.cost;
             pointGain += upgrade.addGain;
-            upgrade.cost = Math.floor(upgrade.cost * 1.5);
+            upgrade.upgradeAmount+=1;
+            upgrade.cost = Math.floor(upgrade.cost * (1.1 + ((index+1)/2)));
             document.getElementById(`cost-${index}`).textContent = upgrade.cost;
+            document.getElementById(`upAmount-${index}`).textContent = upgrade.upgradeAmount;
             pointText.textContent = pointCount;
         }
     }
 
-
+    function showUpgrades(x) {
+        switch (x) {
+            case 0:
+                document.getElementById('allUp').disabled = true;
+                document.getElementById('btnUp').disabled = false;
+                document.getElementById('autoUp').disabled = false;
+                [].forEach.call(document.querySelectorAll(".button"), function (el) {
+                    el.style.visibility = 'visible';
+                });
+                [].forEach.call(document.querySelectorAll(".automation"), function (el) {
+                    el.style.visibility = 'visible';
+                });
+            break;
+            case 1:
+                document.getElementById('allUp').disabled = false;
+                document.getElementById('btnUp').disabled = true;
+                document.getElementById('autoUp').disabled = false;
+                [].forEach.call(document.querySelectorAll(".button"), function (el) {
+                    el.style.visibility = 'visible';
+                });
+                [].forEach.call(document.querySelectorAll(".automation"), function (el) {
+                    el.style.visibility = 'hidden';
+                });
+            break;
+            case 2:
+                document.getElementById('allUp').disabled = false;
+                document.getElementById('btnUp').disabled = false;
+                document.getElementById('autoUp').disabled = true;
+                [].forEach.call(document.querySelectorAll(".button"), function (el) {
+                    el.style.visibility = 'hidden';
+                });
+                [].forEach.call(document.querySelectorAll(".automation"), function (el) {
+                    el.style.visibility = 'visible';
+                });
+            break;
+            default:
+                break;
+        }
+    }
 
     loadGame();
     createUpgradeButtons();
-    clickCountSpan.textContent = clickCount;
+    pointText.textContent = pointCount;
 
     setInterval(saveGame, 30000);
     </script>
