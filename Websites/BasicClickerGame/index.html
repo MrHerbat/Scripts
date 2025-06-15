@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Clicker</title>
+</head>
+<body>
+    <header>
+        <h2>Basic Clicker Website</h2>
+        <button onclick="saveGame()">Save the game!</button>
+    </header>
+    <main>
+        <section id="upgrades">
+        </section>
+        <section id="mainScreen">
+            <h3>Points = <span id="points">0</span></h3>
+            <button id="clickButton">Click!</button>
+        </section>
+    </main>
+    <script>
+        let pointCount = 0
+        let pointGain = 1
+
+        const pointText = document.getElementById("points");
+        const clickerButton = document.getElementById("clickButton");
+        const upgradesContainer = document.getElementById("upgrades");
+
+        const upgradesList = [
+            {name: "Strong Button", addGain: 1, cost: 10},
+            {name: "Stronger Button!", addGain: 5, cost: 40}
+        ];
+
+        function loadGame(){
+            const saved = localStorage.getItem("basicClickerGameSave");
+            if(saved){
+                const gameState = JSON.parse(saved);
+                pointCount = gameState.pointCount || 0;
+                pointGain = gameState.pointGain || 1;
+                upgradesList.forEach((upgrade,index) => {
+                    if(gameState.upgradesList && gameState.upgradesList[index]) {
+                        upgradesList[index].cost = gameState.upgradesList[index].cost;
+                    }
+                })
+            }
+        }
+
+        function saveGame() {
+            const gameState = {
+                pointCount,
+                pointGain,
+                upgradesList
+            }; 
+            localStorage.setItem("basicClickerGameSave",JSON.stringify(gameState));
+            alert("Game Saved Succesfully!")
+        }
+
+
+        clickerButton.addEventListener('click', () =>{
+            pointCount+=pointGain;
+            pointText.textContent = pointCount;
+        });
+
+        function createUpgradeButtons() {
+            upgradesList.forEach((upgrade, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'upgrade';
+                btn.id = `upgrade-${index}`;
+                btn.innerHTML = `${upgrade.name} (+${upgrade.power}) - Cost: <span id="cost-${index}">${upgrade.cost}</span>`;
+                btn.addEventListener('click', () => buyUpgrade(index));
+                upgradesContainer.appendChild(btn);
+            });
+        }
+
+    function buyUpgrade(index) {
+        const upgrade = upgradesList[index];
+        if (pointCount >= upgrade.cost) {
+            pointCount -= upgrade.cost;
+            pointGain += upgrade.addGain;
+            upgrade.cost = Math.floor(upgrade.cost * 1.5);
+            document.getElementById(`cost-${index}`).textContent = upgrade.cost;
+            pointText.textContent = pointCount;
+        }
+    }
+
+
+
+    loadGame();
+    createUpgradeButtons();
+    clickCountSpan.textContent = clickCount;
+
+    setInterval(saveGame, 30000);
+    </script>
+</body>
+</html>
