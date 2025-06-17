@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dungeon Crawler: TEST</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+
+    </header>
+    <body>
+        <section id="mapScreen">
+            <table id="map"></table>
+        </section>
+        <section id="playerScreen">
+
+        </section>
+        <section id="chatBox">
+
+        </section>
+        <script>
+            const map = document.getElementById("map");
+            function generateMap(params) {
+                for (let index = 0; index < 16; index++) {
+                    let row = document.createElement("tr");
+                    row.id = `row-${index}`;
+                    for (let index2 = 0; index2 < 16; index2++) {
+                        let cell = document.createElement("td");
+                        cell.id = `cell-${index+index2}`;
+                        row.appendChild(cell);
+                    }
+                    map.appendChild(row);
+                }
+            }
+
+            
+
+            generateMap();
+        </script>
+    </body>
+</body>
+</html>
