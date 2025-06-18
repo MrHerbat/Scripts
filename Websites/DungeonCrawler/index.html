@@ -21,12 +21,17 @@
 
         </section>
         <script>
+            var roomData = {conn:[],layout:[]};
+            
+            
             const map = document.getElementById("map");
+
+
             function generateMap(params) {
-                for (let index = 0; index < 16; index++) {
+                for (let index = 0; index < 15; index++) {
                     let row = document.createElement("tr");
                     row.id = `row-${index}`;
-                    for (let index2 = 0; index2 < 16; index2++) {
+                    for (let index2 = 0; index2 < 15; index2++) {
                         let cell = document.createElement("td");
                         cell.id = `cell-${index+index2}`;
                         row.appendChild(cell);
@@ -35,7 +40,17 @@
                 }
             }
 
-            
+            function insertRoomInfo(id) {
+                fetch("./rooms.json")
+                    .then(response => response.json())
+                    .then(data =>{
+                        roomData.conn[id] = data.rooms[0].connects;
+                        room.layout[id] = data.rooms[0].layout;
+                    });
+            }
+
+            insertRoomInfo(0);
+            console.log(room.layout[0]);
 
             generateMap();
         </script>

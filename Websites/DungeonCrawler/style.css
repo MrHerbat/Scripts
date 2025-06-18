@@ -3,3 +3,9 @@ td{
     width: 10px;
     height: 10px;
 }
+.wall{
+    background-color: darkgray;
+}
+.free{
+    background-color: antiquewhite;
+}

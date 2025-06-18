@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Clicker</title>
+    <style>
+        .upgrade{
+            border: 1px solid black;
+            margin: 5px;
+        }
+        header{
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        main{
+            display: flex;
+        }
+        #upgrades{
+            width: 30%;
+        }
+        #mainScreen{
+            width: 70%;
+            text-align: center;
+        }
+        #clickButton{
+            font-size: 200%;    
+            padding: 10px;
+        }
+        h3,h4{
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+            <h1>Basic Clicker Website</h1>
+        <section id="options">
+            <span id="saveProgress" style="visibility: none;"></span> <br>
+            <button onclick="saveGame()">Save the game!</button>
+            <button onclick="resetGame()">Reset your progress!</button>
+        </section>
+        
+    </header>
+    <main>
+        <section id="upgrades">
+            <h3>Upgrades!</h3>
+            <nav>
+                <button onclick="showUpgrades(0)" id="allUp" disabled>All</button>
+                <button onclick="showUpgrades(1)" id="btnUp">Button</button>
+                <button onclick="showUpgrades(2)" id="autoUp">Automation</button>
+            </nav>
+        </section>
+        <section id="mainScreen">
+            <h3>Points = <span id="points">0</span></h3>
+            <h4>pt/s = <span id="ptS">0</span></h4>
+            <button id="clickButton">Click!</button>
+        </section>
+    </main>
+    <footer>
+        <p>Clickera zrobił Herbat :3</p>
+    </footer>
+    <script>
+        let pointCount = 0
+        let pointGain = 1
+        let passiveGain = 0;
+
+        const pointText = document.getElementById("points");
+        const clickerButton = document.getElementById("clickButton");
+        const upgradesContainer = document.getElementById("upgrades");
+        const pointPerSecond = document.getElementById("ptS");
+
+        const upgradesList = [
+            {name: "Strong Button", addGain: 1, cost: 10, upgradeAmount: 0, category: 'button'},
+            {name: "Silly Pointer", addGain: 0.1, cost: 25, upgradeAmount: 0, category: 'automation'},
+            {name: "Stronger Button!", addGain: 3, cost: 250, upgradeAmount: 0, category: 'button'},
+            {name: "Strongest Button!!!", addGain: 5, cost: 1000, upgradeAmount: 0, category: 'button'}   
+        ];
+
+        clickerButton.addEventListener('click', () =>{
+            pointCount+=pointGain;
+            pointText.textContent = Math.round(pointCount*10)/10;
+        });
+
+        function loadGame(){
+            const saved = localStorage.getItem("basicClickerGameSave");
+            if(saved){
+                const gameState = JSON.parse(saved);
+                pointCount = Math.round(10 * gameState.pointCount)/10 || 0;
+                pointGain = gameState.pointGain || 1;
+                passiveGain = gameState.passiveGain || 0;
+                upgradesList.forEach((upgrade,index) => {
+                    if(gameState.upgradesList && gameState.upgradesList[index]) {
+                        upgradesList[index].cost = gameState.upgradesList[index].cost;
+                        upgradesList[index].upgradeAmount = gameState.upgradesList[index].upgradeAmount;
+                    }
+                })
+                document.getElementById("saveProgress").style.visibility = 'visible';
+                document.getElementById("saveProgress").textContent = "Save Loaded!";
+                setTimeout(() => {
+                    document.getElementById("saveProgress").style.visibility = 'hidden';
+                }, 2500);
+            }
+        }
+
+        function saveGame() {
+            const gameState = {
+                pointCount,
+                pointGain,
+                passiveGain,
+                upgradesList
+            }; 
+            localStorage.setItem("basicClickerGameSave",JSON.stringify(gameState));
+            document.getElementById("saveProgress").style.visibility = 'visible';
+                document.getElementById("saveProgress").textContent = "Game Saved!";
+                setTimeout(() => {
+                    document.getElementById("saveProgress").style.visibility = 'hidden';
+                }, 2500);
+        }
+
+        function resetGame(params) {
+            if (confirm("Are you sure you want to reset?")) {
+                localStorage.removeItem('basicClickerGameSave');
+                location.reload();
+            }
+        }
+
+        function createUpgradeButtons() {
+            upgradesList.forEach((upgrade, index) => {
+                const block = document.createElement('div');
+                const btn = document.createElement('button');
+                block.classList.add('upgrade');
+                block.classList.add(`${upgrade.category}`);
+                btn.id = `upgrade-${index}`;
+                btn.innerHTML = `<i>Cost: <span id="cost-${index}">${upgrade.cost}</i></span>`;
+                block.innerHTML = `<img src=''><b>${upgrade.name}</b>(<span id='upAmount-${index}'>${upgrade.upgradeAmount}</span>) <i> category - ${upgrade.category}<i></br>Point Gain(+${upgrade.addGain}) -`;
+                if(upgrade.category == "button"){
+                    btn.addEventListener('click', () => buyButtonUpgrade(index));
+                }else if(upgrade.category == "automation"){
+                    btn.addEventListener('click', () => buyAutomationUpgrade(index))
+                }
+                    
+                block.appendChild(btn);
+                upgradesContainer.appendChild(block);
+            });
+        }
+
+    function buyButtonUpgrade(index) {
+        const upgrade = upgradesList[index];
+        if (pointCount >= upgrade.cost) {
+            pointCount -= upgrade.cost;
+            pointGain += upgrade.addGain;
+            upgrade.upgradeAmount+=1;
+            upgrade.cost = Math.floor(upgrade.cost * (1.2 + ((index+1)/2)));
+            document.getElementById(`cost-${index}`).textContent = upgrade.cost;
+            document.getElementById(`upAmount-${index}`).textContent = upgrade.upgradeAmount;
+            pointText.textContent = Math.round(pointCount*10)/10;
+        }
+    }
+
+    function buyAutomationUpgrade(index) {
+        const upgrade = upgradesList[index];
+        if (pointCount >= upgrade.cost) {
+            pointCount -= upgrade.cost;
+            passiveGain += upgrade.addGain;
+            upgrade.upgradeAmount+=1;
+            upgrade.cost = Math.floor(upgrade.cost * (1.2));
+            document.getElementById(`cost-${index}`).textContent = upgrade.cost;
+            document.getElementById(`upAmount-${index}`).textContent = upgrade.upgradeAmount;
+            pointText.textContent = Math.round(pointCount*10)/10;
+            pointPerSecond.textContent = Math.round(passiveGain*100)/100;
+        }
+    }
+
+    function showUpgrades(x) {
+        switch (x) {
+            case 0:
+                document.getElementById('allUp').disabled = true;
+                document.getElementById('btnUp').disabled = false;
+                document.getElementById('autoUp').disabled = false;
+                [].forEach.call(document.querySelectorAll(".button"), function (el) {
+                    el.style.display = 'block';
+                });
+                [].forEach.call(document.querySelectorAll(".automation"), function (el) {
+                    el.style.display = 'block';
+                });
+            break;
+            case 1:
+                document.getElementById('allUp').disabled = false;
+                document.getElementById('btnUp').disabled = true;
+                document.getElementById('autoUp').disabled = false;
+                [].forEach.call(document.querySelectorAll(".button"), function (el) {
+                    el.style.display = 'block';
+                });
+                [].forEach.call(document.querySelectorAll(".automation"), function (el) {
+                    el.style.display = 'none';
+                });
+            break;
+            case 2:
+                document.getElementById('allUp').disabled = false;
+                document.getElementById('btnUp').disabled = false;
+                document.getElementById('autoUp').disabled = true;
+                [].forEach.call(document.querySelectorAll(".button"), function (el) {
+                    el.style.display = 'none';
+                });
+                [].forEach.call(document.querySelectorAll(".automation"), function (el) {
+                    el.style.display = 'block';
+                });
+            break;
+            default:
+                break;
+        }
+    }
+
+    function gainPerSecond() {
+        pointCount+=Math.round(passiveGain*10)/10;
+        pointText.textContent = Math.round(pointCount*100)/100;
+    }
+
+    loadGame();
+    createUpgradeButtons();
+    pointText.textContent = Math.round(pointCount*10)/10;
+    pointPerSecond.textContent = Math.round(passiveGain*100)/100;
+    setInterval(gainPerSecond, 1000);
+    setInterval(saveGame, 30000);
+    </script>
+</body>
+</html>
