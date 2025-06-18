@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dungeon Crawler: TEST</title>
     <link rel="stylesheet" href="style.css">
+    <script type="module">
+        
+    </script>
 </head>
 <body>
     <header>
@@ -20,39 +23,69 @@
         <section id="chatBox">
 
         </section>
-        <script>
-            var roomData = {conn:[],layout:[]};
-            
+        <script type="module">
+            const data = {
+                "rooms": [
+                    {
+                        "connects": [true, true, true, true],
+                        "layout": [
+                        [1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
+                        [1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
+                        [1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
+                        [1,1,1,1,1,1,0,0,0,1,1,1,1,1,1],
+                        [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
+                        [1,1,1,1,0,0,0,0,0,0,0,1,1,1,1],
+                        [1,1,1,0,0,0,0,0,0,0,0,0,1,1,1],
+                        [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],
+                        [1,1,1,0,0,0,0,0,0,0,0,0,1,1,1],
+                        [1,1,1,1,0,0,0,0,0,0,0,1,1,1,1],
+                        [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
+                        [1,1,1,1,1,1,0,0,0,1,1,1,1,1,1],
+                        [1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
+                        [1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
+                        [1,1,1,1,1,1,1,0,1,1,1,1,1,1,1]
+                        ]
+                    }
+                ]
+            };
+
+            var roomsConnection = [];
+            var roomsLayout = [];
             
             const map = document.getElementById("map");
 
 
-            function generateMap(params) {
+            function insertRoomInfo(id) {
+                roomsConnection[id] = data.rooms[id].connects;
+                roomsLayout[id] = data.rooms[id].layout;
+                    
+            }
+
+            function generateMap(layout,id) {
+                insertRoomInfo(id);
+
+                let temp = layout[id];
                 for (let index = 0; index < 15; index++) {
                     let row = document.createElement("tr");
                     row.id = `row-${index}`;
                     for (let index2 = 0; index2 < 15; index2++) {
                         let cell = document.createElement("td");
                         cell.id = `cell-${index+index2}`;
+                        if(temp[index][index2] == 1){
+                            cell.classList.add("wall");
+                        }else if (temp[index][index2] == 2){
+                            cell.classList.add("free");
+                        }
                         row.appendChild(cell);
                     }
                     map.appendChild(row);
                 }
             }
 
-            function insertRoomInfo(id) {
-                fetch("./rooms.json")
-                    .then(response => response.json())
-                    .then(data =>{
-                        roomData.conn[id] = data.rooms[0].connects;
-                        room.layout[id] = data.rooms[0].layout;
-                    });
-            }
+            
 
-            insertRoomInfo(0);
-            console.log(room.layout[0]);
-
-            generateMap();
+            generateMap(roomsLayout,0);
+            console.log(roomsConnection[0]);
         </script>
     </body>
 </body>
