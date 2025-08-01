@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1" />
+  <title>Pixel art binary generator</title>
+  <style>
+    body {
+      max-width: 740px;
+      font-size: 20px;
+      margin: auto;
+      padding: 10px;
+    }
+    table {
+      margin: auto;
+      border: 1px black solid;
+      border-collapse: collapse;
+      touch-action: none;
+    }
+
+    td {
+      width: 30px;
+      height: 30px;
+      border: 1px #ccc solid;
+      user-select: none;
+    }
+    td.selected {
+      background: black;
+    }
+    #palette span {
+      width: 30px;
+      height: 30px;
+      display: inline-block;
+      border: 2px #ccc solid;
+      margin: auto 5px;
+    }
+    #palette span.selected {
+      border-color: green; 
+    }
+    textarea {
+      width: 95%;
+      height: 200px;
+      font-size: 18px;
+      padding: 10px;
+    }
+    #sharing {
+      text-align: center;
+      margin: 20px auto;
+    }
+    button {
+      padding: 10px;
+      background: green;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 24px;
+    }
+    a {
+      color: black;
+    }
+  </style>
+</head>
+<h1>Pixel art and RLE compression</h1>
+
+<p>Generate pixel-art images and learn about binary file formats and run length encoding (RLE) compression. Uses the minimum possible number of bits per pixel based on usage of colours from the fixed colour palette below (ie a black/white image uses a 1-bit index, while using all 16 colours requires a 4-bit index). The RLE run-length is dynamically selected to maximise compression of your image.</p>
+
+<div id="palette"></div>
+<div id="pixelGrid"></div>
+
+<div id="sharing"><button id="linkButton">Share</button> or <a href="/pixel-art?p=0">Reset</a></div>
+
+<p>Non-compressed data size: <b id="uncompressedBitLength"></b> bits (<b id="uncompressedByteLength"></b> bytes) based on a <b class="indexBits"></b>-bit colour index.</p>
+<textarea id="binaryOutput"></textarea>
+
+<p>Compressed data size: <b id="compressedBitLength"></b> bits (<b id="compressedByteLength"></b> bytes). Uses dynamic run-length RLE with a <b class="indexBits"></b>-bit colour index followed by a <b class="runBits"></b>-bit run length. First 8-bit byte is for meta data (version; palette index bits; run length bits)</p>
+<textarea id="compressedOutput"></textarea>
+
+<p>URL-safe Base64 encoded version of the compressed binary data.</p>
+<textarea id="base64Output"></textarea>
+
+<h2>What else would a real file format need?</h2>
+
+<p>As well as the pixel data, the file would need to store data for things such as: image width and height; colour values at each index; bits per run; file signature header. This data is placed at the beginning of the file.</p>
+
+<script>
+let size = 16
+let pixels = []
+let colours = ['#fff', '#000', '#f00', '#008242', '#00f', '#fffb00', '#ff8200', '#ffc384', '#c600c6', '#00fb00', '#00fbff', '#c64121', '#846100', '#654321', '#848284', '#c6c3c6']
+let activeColourIndex = 1
+let indexBits = 1 // dynamic based on highest index actually used
+let base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+
+updateIndexBits()
+preparePalette()
+prepareGrid()
+loadFromUrl()
+
+function loadFromUrl () {
+  let imgURL = (new URLSearchParams(document.location.search)).get('p')
+  unpackImage(imgURL||'GgpUODLkg-N0JchwOFzhdiXYbC5xOxLsNheDA4F8HBIiKIiHBIyKIijCpCKIikCOkRRE6COyKkkpIuwjouRdBiYImHxhMYXIEyAg')
+}
+
+document.querySelectorAll('td').forEach(el => {
+  el.onpointerdown = (e) => {
+    e.preventDefault()
+    setPixel(Number(el.dataset.offset))
+  }
+  el.onpointerenter = (e) => {
+    e.preventDefault()
+    if (e.buttons) setPixel(Number(el.dataset.offset))
+  }
+})
+
+linkButton.onclick = async () => {
+  let searchParams = new URLSearchParams(window.location.search)
+  searchParams.set('p', base64Output.value)
+  history.pushState(null, '', window.location.pathname + '?' + searchParams.toString())
+  await navigator.clipboard.writeText(window.location.href)
+  alert('Link to the image copied to clipboard')
+  
+
+}
+
+window.onpopstate = (e) => {
+  loadFromUrl()
+}
+
+document.querySelectorAll('#palette span').forEach(el => {
+  el.onclick = () => {
+    document.querySelector('#palette span.selected').classList.remove('selected')
+    activeColourIndex = Number(el.dataset.index)
+    el.classList.add('selected')
+  }
+})
+
+function setPixel (offset, colourIndex = activeColourIndex) {
+  pixels[offset] = colourIndex
+  document.querySelector(`td[data-offset="${offset}"`).style.backgroundColor = colours[colourIndex]
+  updateIndexBits()
+  updateBinary()
+}
+
+function setAllPixels (indexes) {
+  for (let i = 0; i < pixels.length; i++) {
+    pixels[i] = indexes[i]||0
+    document.querySelector(`td[data-offset="${i}"]`).style.backgroundColor = colours[pixels[i]]
+  }
+  updateIndexBits()
+  updateBinary()
+}
+
+function preparePalette () {
+  let html = ''
+  for (let i = 0; i < colours.length; i++) {
+    html += `<span data-index="${i}" style="background-color: ${colours[i]}" class="${i === activeColourIndex ? 'selected' : ''}"></span>`
+  }
+  palette.innerHTML = html
+}
+
+function prepareGrid () {
+  let html = '<table>'
+  let i = 0
+  for (let row = 0; row < size; row++) {
+    html += '<tr>'
+    for (let col = 0; col < size; col++) {
+      html += `<td data-offset="${i}"></td>`
+      pixels[i] = 0
+      i++
+    }
+    html += '</tr>'
+  }
+  html += '</table>'
+  pixelGrid.innerHTML = html
+  updateBinary()
+}
+
+function updateIndexBits () {
+  let maxIndex = pixels.reduce((acc, v) => Math.max(acc, v), 0)
+  indexBits = Math.max(1, Math.ceil(Math.log2(maxIndex + 1)))
+  document.querySelectorAll('.indexBits').forEach(el => el.textContent = indexBits)
+}
+
+function updateBinary () {
+  let binary = ''
+  for (let i = 0; i < pixels.length; i++) {
+    if(i === 0 || i%16 === 0)binary+='['
+    binary += pixels[i].toString(2).padStart(indexBits, '0') + ','
+    if ((i + 1) % 16 === 0) binary += '],\n'
+  }
+  let trimmed = binary.replace(/[^01]/g, '')
+  uncompressedBitLength.textContent = trimmed.length
+  uncompressedByteLength.textContent = Math.ceil(trimmed.length / 8)
+  binaryOutput.value = binary
+  updateCompressed()
+}
+
+// RLE
+function updateCompressed () {
+  let runResults = [] // { runLength binary, trimmed, length }
+  let runBits = 1
+  for (let runBits = 1; runBits <= 8; runBits++) {
+    let binary = `00${Number(indexBits - 1).toString(2).padStart(3, '0')}${Number(runBits - 1).toString(2).padStart(3, '0')}\n`
+    let lastIndex = -1
+    let runCount = 0
+    let maxLength = 2 ** runBits - 1
+    for (let i = 0; i < pixels.length; i++) {
+      let index = pixels[i]
+      if (index !== lastIndex || runCount === maxLength) {
+        if (lastIndex !== -1) {
+          // add the run
+          binary += lastIndex.toString(2).padStart(indexBits, '0')
+          binary += runCount.toString(2).padStart(runBits, '0') + ' '
+          runCount = 0
+        }
+      }
+      lastIndex = index
+      runCount++
+    }
+    binary += lastIndex.toString(2).padStart(indexBits, '0')
+    binary += runCount.toString(2).padStart(runBits, '0') + ' '
+    let trimmed = binary.replace(/[^01]/g, '')
+    runResults.push({ length: trimmed.length, runBits, binary, trimmed })
+  }
+
+  let bestResult = runResults.reduce((acc, v) => v.length < acc.length ? v : acc, { length: 1000000 })
+
+  compressedBitLength.textContent = bestResult.trimmed.length
+  compressedByteLength.textContent = Math.ceil(bestResult.trimmed.length / 8)
+  compressedOutput.value = bestResult.binary
+  document.querySelectorAll('.runBits').forEach(el => el.textContent = bestResult.runBits)
+
+  // and base64 it, ready for URLs
+  let bits = bestResult.trimmed
+  let base64Str = ''
+  for (let i = 0; i < bits.length; i+=6) {
+    let index = Number('0b' + bits[i] + (bits[i+1]||0) + (bits[i+2]||0) + (bits[i+3]||0) + (bits[i+4]||0) + (bits[i+5]||0)).toString(10)
+    base64Str += base64[index]
+  }
+  base64Output.value = base64Str
+
+  // and convert back to compressed
+  // unpackImage(base64Str)
+}
+
+// base64 back to pixels
+// first 8-bit byte is meta data:
+// - 2-bit
+// - 3-bit colour-index-bits (1-indexed to allow 1-8 not 0-7)
+// - 3-bit run-length-bits (1-indexed to allow 1-8 not 0-7)
+function unpackImage (base64Str) {
+  let newPixels = []
+  let bits = ''
+  for (let i = 0; i < base64Str.length; i++) {
+    bits += base64.indexOf(base64Str[i]).toString(2).padStart(6, '0')
+  }
+  let version = Number('0b' + bits[0] + bits[1]) + 1
+  let indexBits = Number('0b' + bits[2] + bits[3] + bits[4]) + 1
+  let runBits = Number('0b' + bits[5] + bits[6] + bits[7]) + 1
+  // console.log('raw bits:', bits)
+  console.log('version:', version, 'indexBits:', indexBits, 'runBits:', runBits)
+  for (let i = 8; i < bits.length; i+=(indexBits+runBits)) {
+    if (bits.length >= i + indexBits + runBits) {
+      let colourIndex = ''
+      let runLength = ''
+      for (let j = 0; j < indexBits; j++) colourIndex += bits[i+j]
+      for (let j = 0; j < runBits; j++) runLength += bits[i+indexBits+j]
+      colourIndex = Number('0b' + colourIndex)
+      runLength = Number('0b' + runLength)
+      for (let j = 0; j < runLength; j++) newPixels.push(colourIndex)
+    }
+  }
+  setAllPixels(newPixels)
+}
+</script>
