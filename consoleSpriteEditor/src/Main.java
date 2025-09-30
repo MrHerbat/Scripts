@@ -13,12 +13,8 @@ public class Main {
     public static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
-//        int[][] tab = drawTable(8,8);
-//        tableToPNG(tab,"apple");
         Canvas canvas = new Canvas();
         canvas.createCanvas();
-        canvas.editCanvas();
-
     }
 
 }

@@ -8,8 +8,7 @@ import java.util.Scanner;
 
 public class Canvas
 {
-    int xSize;
-    int ySize;
+    public static boolean loop = true;
     int[][] canvas;
     public static Color[] colors = {
             new Color(0,0,0),
@@ -32,6 +31,7 @@ public class Canvas
             {"\u001B[37m","\u001B[47m"},
             {"\u001B[0m","\u001B[0m"}
     };
+    public static Scanner scanner = new Scanner(System.in);
 
     public Canvas() {
     }
@@ -48,33 +48,36 @@ public class Canvas
             }
             System.out.println();
         }
-        for (int i = 0; i < xSize; i++) {
+        for (int i = 0; i < canvas[0].length; i++) {
             System.out.print("=====");
         }
         System.out.println();
         System.out.println(consoleColors[8][0]+"a/w/s/d = left/up/down/right | + - increment color | - - decrement color");
-        System.out.println(consoleColors[8][0]+"x - leave without saving | f - save as .png file");
+        System.out.println(consoleColors[8][0]+"x - leave without saving | f - save as .png file | o - open .png file");
     }
     public void createCanvas(){
         int choice;
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("1 - utwórz nowy sprite \n 2 - otwórz tworzony wcześniej \n 3 - wyjdź \n zalecane jest tworzyć sprite'y mniejszych rozmiarów");
-        boolean loop = true;
+        loop = true;
         while(loop){
+            System.out.println("1 - create new sprite \n 2 - open .png file \n 3 - exit \n it's recommended to create smaller sprites");
             choice = scanner.nextInt();
             switch (choice){
                 case 1:
                     int x,y;
-                    System.out.print("Podaj wielkość x:  ");
+                    System.out.print("Set X size:  ");
                     x = scanner.nextInt();
-                    System.out.print("Podaj wielkość y:  ");
+                    System.out.print("Set Y size:  ");
                     y = scanner.nextInt();
-                    loop=false;
-                    canvas = new int[x][y];
-                    editCanvas();
+                    if(x>0 || y>0){
+                        canvas = new int[y][x];
+                        editCanvas();
+                        loop=false;
+                    }else{
+                        System.out.println("Wrong size");
+                    }
                     break;
                 case 2:
-                    loop=false;
+                    pngToCanvas();
                     editCanvas();
                     break;
                 case 3:
@@ -86,17 +89,10 @@ public class Canvas
         }
     }
     public void editCanvas(){
-        String fileName;
-        Scanner scanner = new Scanner(System.in);
-        if(canvas==null){
-            System.out.print("Podaj nazwe pliku: ");
-            fileName = scanner.next();
-            pngToCanvas(fileName);
-        }
         char c;
         int selX = 0, selY = 0;
-        boolean loop = true;
-        while(loop){
+        loop = true;
+        do{
             displayCanvas(selX,selY);
             c = scanner.next().charAt(0);
             switch (c){
@@ -146,24 +142,22 @@ public class Canvas
                     }
                     break;
                 case 'f':
-                    System.out.print("Podaj nazwe pliku: ");
-                    fileName = scanner.next();
-                    canvasToPng(canvas,fileName);
+                    canvasToPng(canvas);
                     break;
                 case 'o':
-                    System.out.print("Podaj nazwe pliku: ");
-                    fileName = scanner.next();
-                    pngToCanvas(fileName);
+                    pngToCanvas();
+                    loop = true;
                     break;
                 default:
                     break;
             }
-
-        }
+        }while(loop);
     }
 
-    public void canvasToPng(int[][] tab, String name){
-        String path = "D:\\"+name+".png";
+    public void canvasToPng(int[][] tab){
+        System.out.print("File name: ");
+        String fileName = scanner.next();
+        String path = "D:\\"+fileName+".png";
         BufferedImage image = new BufferedImage(tab.length,tab[0].length, BufferedImage.TYPE_INT_RGB);
         for (int y = 0; y < tab.length; y++) {
             for (int x = 0; x < tab[y].length; x++) {
@@ -177,32 +171,36 @@ public class Canvas
             e.printStackTrace();
         }
     }
-    public void pngToCanvas(String name){
-        String path = "D:\\"+name+".png";
+    public void pngToCanvas(){
+        System.out.print("File name: ");
+        String fileName = scanner.next();
+        String path = "D:\\"+fileName+".png";
         File ImageFile = new File(path);
-
-        try{
-            var tempImage = ImageIO.read(ImageFile);
-            if(canvas == null || (canvas.length< tempImage.getHeight() && canvas[0].length<tempImage.getWidth())){
-                System.out.println(tempImage.getHeight());
-                System.out.println(tempImage.getWidth());
-                canvas = new int[tempImage.getHeight()][tempImage.getWidth()];
-            }
-            for (int i = 0; i < tempImage.getHeight(); i++) {
-                for (int j = 0; j < tempImage.getWidth(); j++) {
-                    int cId = 0;
-                    for (Color c : colors){
-                        if(c.getRGB()==tempImage.getRGB(i,j)){
-                            canvas[i][j]=cId;
-                            break;
+        if(ImageFile.isFile()){
+            loop = false;
+            try{
+                var tempImage = ImageIO.read(ImageFile);
+                if(canvas == null || (canvas.length< tempImage.getHeight() && canvas[0].length<tempImage.getWidth())){
+                    canvas = new int[tempImage.getHeight()][tempImage.getWidth()];
+                }
+                for (int i = 0; i < tempImage.getHeight(); i++) {
+                    for (int j = 0; j < tempImage.getWidth(); j++) {
+                        int cId = 0;
+                        for (Color c : colors){
+                            if(c.getRGB()==tempImage.getRGB(i,j)){
+                                canvas[j][i]=cId;
+                                break;
+                            }
+                            cId++;
                         }
-                        cId++;
                     }
                 }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
-
+        else{
+            System.out.println("File doesn't exist or couldn't be found in D:/ directory");
+        }
     }
 }
