@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class Canvas
 {
-    public static boolean loop = true;
+    public static boolean loop = true, toggleColorList = false;
     int[][] canvas;
     public static Color[] colors = {
             new Color(0,0,0),
@@ -52,8 +52,28 @@ public class Canvas
             System.out.print("=====");
         }
         System.out.println();
-        System.out.println(consoleColors[8][0]+"a/w/s/d = left/up/down/right | + - increment color | - - decrement color");
-        System.out.println(consoleColors[8][0]+"x - leave without saving | f - save as .png file | o - open .png file");
+        if(toggleColorList){
+            displayColorList();
+            for (int i = 0; i < canvas[0].length; i++) {
+                System.out.print("=====");
+            }
+            System.out.println();
+        }
+
+        System.out.println(consoleColors[8][0]+"a/w/s/d = left/up/down/right | + - increment color | - - decrement color | 1-7 - choose color");
+        System.out.println(consoleColors[8][0]+"l - toggle color list | x - leave without saving | f - save as .png file | o - open .png file");
+    }
+    public void displayColorList(){
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (i==0){
+                    System.out.print(j+" |");
+                }else{
+                    System.out.print(consoleColors[j][0]+consoleColors[j][1]+"|||"+consoleColors[8][0]);
+                }
+            }
+            System.out.println();
+        }
     }
     public void createCanvas(){
         int choice;
@@ -148,7 +168,14 @@ public class Canvas
                     pngToCanvas();
                     loop = true;
                     break;
+                case 'l':
+                    toggleColorList=!toggleColorList;
+                    break;
                 default:
+                    int temp = Character. getNumericValue(c);
+                    if(temp>=0&&temp<8){
+                        canvas[selY][selX]=temp;
+                    }
                     break;
             }
         }while(loop);
