@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="idk:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/idk_jar</output-path>
+  <artifact type="jar" name="pixelArtEditor:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/pixelArtEditor_jar</output-path>
     <root id="archive" name="idk.jar">
       <element id="module-output" name="idk" />
     </root>
