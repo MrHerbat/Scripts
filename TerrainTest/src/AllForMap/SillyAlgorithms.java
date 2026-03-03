@@ -10,9 +10,6 @@ public class SillyAlgorithms {
     private final long seed;        // Stored as long for better Random seeding
     private static final int[] p = new int[512];  // Permutation table (doubled for wrap-around)
 
-    /**
-     * Constructor with explicit seed for reproducible noise.
-     */
     public SillyAlgorithms(long seed) {
         this.seed = seed;
         initPermutation(seed);
@@ -59,7 +56,7 @@ public class SillyAlgorithms {
     }
 
     /**
-     * Returns Perlin noise value at (x, y). Range ≈ -1 to 1.
+     * Returns Perlin noise value at (x, y). Range ~ -1 to 1.
      */
     public static double noise(double x, double y) {
         int X = (int) Math.floor(x) & 255;
