@@ -38,13 +38,13 @@ public class DisplayFrame extends JFrame {
         Label persistanceLabel = new Label("Noise persistance:");
         Label lacunarityLabel = new Label("Noise lacunarity:");
 
-        JTextField widthTextField = new JTextField();
-        JTextField heightTextField = new JTextField();
-        JTextField seedTextField = new JTextField();
-        JTextField noiseScaleTextField = new JTextField();
-        JTextField octavesTextField = new JTextField();
-        JTextField persistanceTextField = new JTextField();
-        JTextField lacunarityTextField = new JTextField();
+        JTextField widthTextField = new JTextField(Integer.toString(mapGen.getMapWidth()));
+        JTextField heightTextField = new JTextField(Integer.toString(mapGen.getMapHeight()));
+        JTextField seedTextField = new JTextField(Long.toString(mapGen.getSeed()));
+        JTextField noiseScaleTextField = new JTextField(Float.toString(mapGen.getNoiseScale()));
+        JTextField octavesTextField = new JTextField(Integer.toString(mapGen.getOctaves()));
+        JTextField persistanceTextField = new JTextField(Float.toString(mapGen.getPersistance()));
+        JTextField lacunarityTextField = new JTextField(Float.toString(mapGen.getLacunarity()));
 
         JButton randomizeSeed = new JButton("Random seed");
         JButton generateNoise = new JButton("Generate noise map");
@@ -94,6 +94,39 @@ public class DisplayFrame extends JFrame {
         panelControls.add(noiseScaleTextField,gc);
 
         gc.gridx = 0;
+        gc.gridy = 4;
+        gc.gridwidth = 1;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        panelControls.add(octavesLabel,gc);
+        gc.gridx = 1;
+        gc.gridy = 4;
+        gc.gridwidth = 3;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        panelControls.add(octavesTextField,gc);
+
+        gc.gridx = 0;
+        gc.gridy = 5;
+        gc.gridwidth = 1;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        panelControls.add(persistanceLabel,gc);
+        gc.gridx = 1;
+        gc.gridy = 5;
+        gc.gridwidth = 3;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        panelControls.add(persistanceTextField,gc);
+
+        gc.gridx = 0;
+        gc.gridy = 6;
+        gc.gridwidth = 1;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        panelControls.add(lacunarityLabel,gc);
+        gc.gridx = 1;
+        gc.gridy = 6;
+        gc.gridwidth = 3;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        panelControls.add(lacunarityTextField,gc);
+
+        gc.gridx = 0;
         gc.gridy = 8;
         gc.gridwidth = 2;
         gc.fill = GridBagConstraints.HORIZONTAL;
@@ -104,15 +137,22 @@ public class DisplayFrame extends JFrame {
         gc.fill = GridBagConstraints.HORIZONTAL;
         panelControls.add(generateNoise,gc);
 
+
+
         this.setTitle("TerrainTest");
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setSize(900,600);
-        this.setLayout(null);
+        this.setLayout(new GridBagLayout());
         this.setVisible(true);
 
-
-        this.add(panelMap);
-        this.add(panelControls);
+        gc.weighty = 2;
+        gc.weightx = 1;
+        gc.gridx = 0;
+        gc.fill = GridBagConstraints.BOTH;
+        this.add(panelMap,gc);
+        gc.weighty = 1;
+        gc.gridx = 3;
+        this.add(panelControls,gc);
     }
     public static BufferedImage resize(BufferedImage img, int newW, int newH) {
         Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
