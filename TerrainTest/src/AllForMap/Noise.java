@@ -4,15 +4,16 @@ package AllForMap;
 import java.util.Random;
 
 public class Noise {
-    public static float[][] generateNoiseMap(int mapWidth,int mapHeight, long seed, float scale, int octaves, float persistence, float lacunarity){
+    public static float[][] generateNoiseMap(int mapWidth,int mapHeight, long seed, float scale, int octaves, float persistence, float lacunarity,
+        int offset_x, int offset_y){
         float[][] noiseMap = new float[mapWidth][mapHeight];
         SillyAlgorithms sa = new SillyAlgorithms(seed);
 
         Random rand = new Random(seed);
         float[][] octaveOffsets = new float[octaves][2];
         for (int i = 0; i < octaves; i++) {
-            float offsetX = rand.nextInt(-100000,100000);
-            float offsetY = rand.nextInt(-100000,100000);
+            float offsetX = rand.nextInt(-100000,100000) + offset_x;
+            float offsetY = rand.nextInt(-100000,100000) + offset_y;
             octaveOffsets[i][0] = offsetX;
             octaveOffsets[i][1] = offsetY;
         }

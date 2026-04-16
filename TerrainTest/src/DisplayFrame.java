@@ -4,18 +4,21 @@ import javax.swing.*;
 import javax.swing.text.html.ImageView;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Random;
 
 public class DisplayFrame extends JFrame {
 
     DisplayFrame(){
 
         MapGenerator mapGen = new MapGenerator();
+        mapGen.drawMode = MapGenerator.DrawMode.ColorMap;
         mapGen.GenerateMap();
-        BufferedImage perlinNoise = mapGen.mapImage;
+
 
         JLabel noise = new JLabel();
         noise.setSize(700,700);
-        ImageIcon image = new ImageIcon(perlinNoise);
+        ImageIcon image = new ImageIcon();
+        image.setImage(mapGen.getMapImage());
         noise.setIcon(image);
 
         JPanel panelMap = new JPanel();
@@ -45,9 +48,33 @@ public class DisplayFrame extends JFrame {
         JTextField octavesTextField = new JTextField(Integer.toString(mapGen.getOctaves()));
         JTextField persistanceTextField = new JTextField(Float.toString(mapGen.getPersistance()));
         JTextField lacunarityTextField = new JTextField(Float.toString(mapGen.getLacunarity()));
+        JTextField offsetxTextField = new JTextField(Integer.toString(mapGen.getOffsetX()));
+        JTextField offsetyTextField = new JTextField(Integer.toString(mapGen.getOffsetY()));
 
         JButton randomizeSeed = new JButton("Random seed");
+        randomizeSeed.addActionListener(e -> {
+            Random rand = new Random();
+            mapGen.setSeed(rand.nextLong());
+            seedTextField.setText(Long.toString(mapGen.getSeed()));
+        });
         JButton generateNoise = new JButton("Generate noise map");
+        generateNoise.addActionListener(e -> {
+            mapGen.setMapWidth(Integer.parseInt(widthTextField.getText()));
+            mapGen.setMapHeight(Integer.parseInt(heightTextField.getText()));
+            mapGen.setSeed(Long.parseLong(seedTextField.getText()));
+            mapGen.setNoiseScale(Float.parseFloat(noiseScaleTextField.getText()));
+            mapGen.setOctaves(Integer.parseInt(octavesTextField.getText()));
+            mapGen.setPersistance(Float.parseFloat(persistanceTextField.getText()));
+            mapGen.setLacunarity(Float.parseFloat(lacunarityTextField.getText()));
+            mapGen.setOffsetX(Integer.parseInt(offsetxTextField.getText()));
+            mapGen.setOffsetY(Integer.parseInt(offsetyTextField.getText()));
+            mapGen.GenerateMap();
+            image.setImage(mapGen.getMapImage());
+            noise.setIcon(image);
+            panelMap.repaint();
+        });
+
+        JCheckBox autoUpdate = new JCheckBox("Auto update map");
 
         gc.gridx = 0;
         gc.gridy = 0;
@@ -126,6 +153,18 @@ public class DisplayFrame extends JFrame {
         gc.fill = GridBagConstraints.HORIZONTAL;
         panelControls.add(lacunarityTextField,gc);
 
+        gc.gridx=0;
+        gc.gridy=7;
+        gc.gridwidth=2;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        panelControls.add(offsetxTextField,gc);
+
+        gc.gridx=2;
+        gc.gridy=7;
+        gc.gridwidth=2;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        panelControls.add(offsetyTextField,gc);
+
         gc.gridx = 0;
         gc.gridy = 8;
         gc.gridwidth = 2;
@@ -136,6 +175,11 @@ public class DisplayFrame extends JFrame {
         gc.gridwidth = 2;
         gc.fill = GridBagConstraints.HORIZONTAL;
         panelControls.add(generateNoise,gc);
+
+        gc.gridx = 0;
+        gc.gridy = 9;
+        gc.gridwidth = 2;
+        panelControls.add(autoUpdate,gc);
 
 
 
@@ -153,15 +197,5 @@ public class DisplayFrame extends JFrame {
         gc.weighty = 1;
         gc.gridx = 3;
         this.add(panelControls,gc);
-    }
-    public static BufferedImage resize(BufferedImage img, int newW, int newH) {
-        Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
-        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
-
-        Graphics2D g2d = dimg.createGraphics();
-        g2d.drawImage(tmp, 0, 0, null);
-        g2d.dispose();
-
-        return dimg;
     }
 }
