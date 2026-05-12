@@ -14,12 +14,12 @@ public class MapGenerator
     public int mapWidth = 400;
     public int mapHeight = 400;
     public long seed = -71380125;
-    public float noiseScale = 20.3f;
+    public float noiseScale = 24;
 
     public int octaves = 4;
     public float persistance = 0.5f;
     public float lacunarity = 2f;
-    public int offsetX = 0, offsetY = 0;
+    public float offsetX = 0, offsetY = 0;
 
     public TerrainType[] regions = {
             new TerrainType("DeppWater1",0.3f,new Color(20,20,170)),
@@ -120,19 +120,19 @@ public class MapGenerator
         this.lacunarity = lacunarity;
     }
 
-    public int getOffsetX() {
+    public float getOffsetX() {
         return offsetX;
     }
 
-    public void setOffsetX(int offsetX) {
+    public void setOffsetX(float offsetX) {
         this.offsetX = offsetX;
     }
 
-    public int getOffsetY() {
+    public float getOffsetY() {
         return offsetY;
     }
 
-    public void setOffsetY(int offsetY) {
+    public void setOffsetY(float offsetY) {
         this.offsetY = offsetY;
     }
 

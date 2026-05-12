@@ -1,12 +1,7 @@
 import AllForMap.MapGenerator;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.html.ImageView;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeListener;
 import java.util.Random;
 
 public class DisplayFrame extends JFrame {
@@ -18,15 +13,16 @@ public class DisplayFrame extends JFrame {
         mapGen.GenerateMap();
 
 
-        JLabel noise = new JLabel();
-        noise.setSize(700,700);
-        ImageIcon image = new ImageIcon();
-        image.setImage(mapGen.getMapImage());
-        noise.setIcon(image);
-
         JPanel panelMap = new JPanel();
         panelMap.setBounds(0,0,600,600);
         panelMap.setBackground(Color.GRAY);
+
+        JLabel noise = new JLabel();
+        noise.setSize(panelMap.getWidth(),panelMap.getHeight());
+        ImageIcon image = new ImageIcon();
+        image.setImage(mapGen.getMapImage().getScaledInstance(600,600,Image.SCALE_DEFAULT));
+        noise.setIcon(image);
+
         panelMap.add(noise);
 
         JPanel panelControls = new JPanel(new GridBagLayout());
@@ -51,8 +47,8 @@ public class DisplayFrame extends JFrame {
         JTextField octavesTextField = new JTextField(Integer.toString(mapGen.getOctaves()));
         JTextField persistanceTextField = new JTextField(Float.toString(mapGen.getPersistance()));
         JTextField lacunarityTextField = new JTextField(Float.toString(mapGen.getLacunarity()));
-        JTextField offsetxTextField = new JTextField(Integer.toString(mapGen.getOffsetX()));
-        JTextField offsetyTextField = new JTextField(Integer.toString(mapGen.getOffsetY()));
+        JTextField offsetxTextField = new JTextField(Float.toString(mapGen.getOffsetX()));
+        JTextField offsetyTextField = new JTextField(Float.toString(mapGen.getOffsetY()));
 
         JButton randomizeSeed = new JButton("Random seed");
         randomizeSeed.addActionListener(e -> {
@@ -62,15 +58,16 @@ public class DisplayFrame extends JFrame {
         });
         JButton generateNoise = new JButton("Generate noise map");
         generateNoise.addActionListener(e -> {
-            updateMap(mapGen, image, noise, Integer.parseInt(widthTextField.getText()),
+            updateMap(mapGen, image, noise,
+                    Integer.parseInt(widthTextField.getText()),
                     Integer.parseInt(heightTextField.getText()),
                     Long.parseLong(seedTextField.getText()),
                     Float.parseFloat(noiseScaleTextField.getText()),
                     Integer.parseInt(octavesTextField.getText()),
                     Float.parseFloat(persistanceTextField.getText()),
                     Float.parseFloat(lacunarityTextField.getText()),
-                    Integer.parseInt(offsetxTextField.getText()),
-                    Integer.parseInt(offsetyTextField.getText()));
+                    Float.parseFloat(offsetxTextField.getText()),
+                    Float.parseFloat(offsetyTextField.getText()));
             panelMap.repaint();
         });
 
@@ -202,7 +199,7 @@ public class DisplayFrame extends JFrame {
                            ImageIcon image, JLabel noise,
                            int mapWidth, int mapHeight,long seed, float noiseScale,
                            int octaves, float persistance, float lacunarity,
-                           int offsetX, int offsetY){
+                           float offsetX, float offsetY){
         mapGen.setMapWidth(mapWidth);
         mapGen.setMapHeight(mapHeight);
         mapGen.setSeed(seed);
@@ -213,7 +210,7 @@ public class DisplayFrame extends JFrame {
         mapGen.setOffsetX(offsetX);
         mapGen.setOffsetY(offsetY);
         mapGen.GenerateMap();
-        image.setImage(mapGen.getMapImage());
+        image.setImage(mapGen.getMapImage().getScaledInstance(600,600,Image.SCALE_DEFAULT));
         noise.setIcon(image);
     }
 }

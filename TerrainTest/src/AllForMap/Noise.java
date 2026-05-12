@@ -5,7 +5,7 @@ import java.util.Random;
 
 public class Noise {
     public static float[][] generateNoiseMap(int mapWidth,int mapHeight, long seed, float scale, int octaves, float persistence, float lacunarity,
-        int offset_x, int offset_y){
+        float offset_x, float offset_y){
         float[][] noiseMap = new float[mapWidth][mapHeight];
         SillyAlgorithms sa = new SillyAlgorithms(seed);
 
