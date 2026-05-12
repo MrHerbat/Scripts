@@ -1,13 +1,16 @@
 import AllForMap.MapGenerator;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.html.ImageView;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeListener;
 import java.util.Random;
 
 public class DisplayFrame extends JFrame {
-
+    boolean allowDynamicChange = false;
     DisplayFrame(){
 
         MapGenerator mapGen = new MapGenerator();
@@ -59,18 +62,15 @@ public class DisplayFrame extends JFrame {
         });
         JButton generateNoise = new JButton("Generate noise map");
         generateNoise.addActionListener(e -> {
-            mapGen.setMapWidth(Integer.parseInt(widthTextField.getText()));
-            mapGen.setMapHeight(Integer.parseInt(heightTextField.getText()));
-            mapGen.setSeed(Long.parseLong(seedTextField.getText()));
-            mapGen.setNoiseScale(Float.parseFloat(noiseScaleTextField.getText()));
-            mapGen.setOctaves(Integer.parseInt(octavesTextField.getText()));
-            mapGen.setPersistance(Float.parseFloat(persistanceTextField.getText()));
-            mapGen.setLacunarity(Float.parseFloat(lacunarityTextField.getText()));
-            mapGen.setOffsetX(Integer.parseInt(offsetxTextField.getText()));
-            mapGen.setOffsetY(Integer.parseInt(offsetyTextField.getText()));
-            mapGen.GenerateMap();
-            image.setImage(mapGen.getMapImage());
-            noise.setIcon(image);
+            updateMap(mapGen, image, noise, Integer.parseInt(widthTextField.getText()),
+                    Integer.parseInt(heightTextField.getText()),
+                    Long.parseLong(seedTextField.getText()),
+                    Float.parseFloat(noiseScaleTextField.getText()),
+                    Integer.parseInt(octavesTextField.getText()),
+                    Float.parseFloat(persistanceTextField.getText()),
+                    Float.parseFloat(lacunarityTextField.getText()),
+                    Integer.parseInt(offsetxTextField.getText()),
+                    Integer.parseInt(offsetyTextField.getText()));
             panelMap.repaint();
         });
 
@@ -197,5 +197,23 @@ public class DisplayFrame extends JFrame {
         gc.weighty = 1;
         gc.gridx = 3;
         this.add(panelControls,gc);
+    }
+    private void updateMap(MapGenerator mapGen,
+                           ImageIcon image, JLabel noise,
+                           int mapWidth, int mapHeight,long seed, float noiseScale,
+                           int octaves, float persistance, float lacunarity,
+                           int offsetX, int offsetY){
+        mapGen.setMapWidth(mapWidth);
+        mapGen.setMapHeight(mapHeight);
+        mapGen.setSeed(seed);
+        mapGen.setNoiseScale(noiseScale);
+        mapGen.setOctaves(octaves);
+        mapGen.setPersistance(persistance);
+        mapGen.setLacunarity(lacunarity);
+        mapGen.setOffsetX(offsetX);
+        mapGen.setOffsetY(offsetY);
+        mapGen.GenerateMap();
+        image.setImage(mapGen.getMapImage());
+        noise.setIcon(image);
     }
 }

@@ -22,17 +22,20 @@ public class MapGenerator
     public int offsetX = 0, offsetY = 0;
 
     public TerrainType[] regions = {
-            new TerrainType("DeppWater",0.3f,Color.BLUE),
-            new TerrainType("ShallowWater",0.4f,Color.CYAN),
-            new TerrainType("Sand", 0.475f, Color.yellow),
-            new TerrainType("Grass", 0.65f, Color.GREEN),
-            new TerrainType("Rock", 0.7f, Color.GRAY),
-            new TerrainType("Rock2", 0.85f, Color.DARK_GRAY),
-            new TerrainType("Snow",1,Color.WHITE),
+            new TerrainType("DeppWater1",0.3f,new Color(20,20,170)),
+            new TerrainType("DeepWater2",0.375f,new Color(20,125,190)),
+            new TerrainType("ShallowWater",0.425f,new Color(80, 150, 240)),
+            new TerrainType("Sand1", 0.475f, new Color(220, 185, 35)),
+            new TerrainType("Sand2", 0.5f, new Color(240, 200, 55)),
+            new TerrainType("Grass1", 0.6f, new Color(15, 160, 10)),
+            new TerrainType("Grass3", 0.65f, new Color(35, 180, 35)),
+            new TerrainType("Grass2", 0.7f, new Color(55, 200, 50)),
+            new TerrainType("Rock1", 0.75f, new Color(85, 70, 60)),
+            new TerrainType("Rock2", 0.85f,new Color(70, 50, 50)),
+            new TerrainType("Rock3", 0.95f, new Color(55, 30, 40)),
+            new TerrainType("Rock3", 0.975f, new Color(199, 254, 255)),
+            new TerrainType("Snow",1,new Color(227, 254, 255))
     };
-
-    public int posX = 0;
-    public int posY = 0;
 
     public BufferedImage mapImage;
 
